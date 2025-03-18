@@ -18,4 +18,5 @@ public interface Userservice {
     boolean isEmailUnique(String email);
     boolean isOtherEmailUnique(String email, int userId);
     public String encodePassword(String password);
+    User findByEmail(String email);
 }

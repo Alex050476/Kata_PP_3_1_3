@@ -28,6 +28,9 @@ public class User {
     @Size(min = 2, max = 50, message = "Name should be between 2 & 50 chars")
     private String nickname;
 
+    @Column(name = "age")
+    private int age;
+
     @Column(unique = true)
     @NotEmpty
     private String email;
@@ -44,9 +47,10 @@ public class User {
 
     public User() {}
 
-    public User(String name, String nickname, String email, String password) {
+    public User(String name, String nickname, int age, String email, String password) {
         this.name = name;
         this.nickname = nickname;
+        this.age = age;
         this.email = email;
         this.password = password;
     }
@@ -73,6 +77,14 @@ public class User {
 
     public void setNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
     }
 
     public String getEmail() {

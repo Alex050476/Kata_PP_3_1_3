@@ -93,4 +93,9 @@ public class UserServiceImpl implements Userservice {
     public String encodePassword(String password) {
         return passwordEncoder.encode(password);
     }
+
+    @Override
+    public User findByEmail(String email) {
+        return userDao.findByEmail(email);
+    }
 }
