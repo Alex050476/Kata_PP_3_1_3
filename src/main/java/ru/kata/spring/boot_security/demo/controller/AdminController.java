@@ -15,10 +15,13 @@ import ru.kata.spring.boot_security.demo.service.Userservice;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
+    private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
     private final Userservice service;
     private final Userservice userservice;
 
@@ -83,24 +86,36 @@ public class AdminController {
                          @RequestParam("id") int id,
                          @RequestParam(value = "roles", required = false) List<Integer> roleIds,
                          Model model) {
+
+        logger.info("Updating user with ID: {}", id);
+        logger.info("User data: {}", user);
+        logger.info("Roles: {}", roleIds);
+
+        // Логика обновления пользователя
         if (result.hasErrors()) {
             model.addAttribute("allRoles", userservice.getAllRoles());
-            return "ref";
+            model.addAttribute("error", true);
+            return "admin";
         }
-        if (!userservice.isOtherEmailUnique(user.getEmail(), id)) {
-            model.addAttribute("emailError", "Email is already exists!");
-            model.addAttribute("allRoles", userservice.getAllRoles());
-            return "ref";
+
+        // Обновление полей пользователя
+        User existingUser = userservice.show(id);
+        existingUser.setName(user.getName());
+        existingUser.setAge(user.getAge());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setNickname(user.getNickname());
+
+        // Обновление ролей
+        if (roleIds != null && !roleIds.isEmpty()) {
+            Set<Role> selectedRoles = new HashSet<>(userservice.getRolesByIds(roleIds));
+            existingUser.setRoleSet(selectedRoles);
+
+        } else {
+            logger.warn("Roles are null or empty for user with ID: {}", id); // Логирование, если роли не переданы
+            existingUser.setRoleSet(new HashSet<>()); // Устанавливаем пустой набор ролей
         }
-        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
-            User existsUser = userservice.show(id);
-            user.setPassword(existsUser.getPassword());
-        }
-        Set<Role> selectedRoles = roleIds != null
-                ? service.getRolesByIds(roleIds)
-                : new HashSet<>();
-        user.setRoleSet(selectedRoles);
-        userservice.refactorUser(id, user);
+
+        userservice.refactorUser(id, existingUser);
         return "redirect:/admin";
     }
 

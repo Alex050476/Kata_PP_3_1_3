@@ -51,6 +51,7 @@
             margin-left: 250px; /* Отступ для боковой панели */
             padding: 20px;
         }
+
         select option:checked {
             background-color: #007bff; /* Синий цвет фона */
             color: white; /* Белый цвет текста */
@@ -123,11 +124,12 @@
                                 <li th:each="role : ${user.roleSet}" th:text="${role.role}"></li>
                             </ul>
                         <td>
-                            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editUserModal"
-                                    th:attr="data-user-id=${user.id}, data-user-name=${user.name}, data-user-nickname=${user.nickname},
-        data-user-age=${user.age}, data-user-email=${user.email}, data-user-roles=${#strings.listJoin(user.roleSet.![id], ',')}">
-                                Edit
-                            </button>
+                        <button type="button" class="btn btn-warning" data-bs-toggle="modal"
+                                data-bs-target="#editUserModal"
+                                th:attr="data-user-id=${user.id}, data-user-name=${user.name}, data-user-nickname=${user.nickname},
+                 data-user-age=${user.age}, data-user-email=${user.email}, data-user-roles=${#strings.listJoin(user.roleSet.![role], ',')}">
+                            Edit
+                        </button>
                         </td>
                         <td>
                             <form th:action="@{/admin/user}" method="post">
@@ -233,10 +235,12 @@
             </div>
             <div class="modal-body">
                 <form th:action="@{/admin/user}" th:method="POST" th:object="${user}">
-                    <input type="hidden" th:field="*{id}" />
+                    <input type="hidden" name="_method" value="PATCH" />
+                    <input type="hidden" id="userId" name="id" />
+                    <input type="hidden" id="allRoles" th:value="${#strings.listJoin(allRoles.![id + ':' + role], ',')}" />
                     <div class="mb-3">
                         <label for="editFirstName" class="form-label">First name</label>
-                        <input type="text" class="form-control" th:field="*{name}" id="editFirstName"/>
+                        <input type="text" class="form-control" th:field="*{name}" id="editFirstName" name="name"/>
                     </div>
                     <div class="mb-3">
                         <label for="editLastName" class="form-label">Last name</label>
@@ -244,7 +248,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="editAge" class="form-label">Age</label>
-                        <input type="number" class="form-control" th:field="*{age}" id="editAge"/>
+                        <input type="number" class="form-control" th:field="*{age}" id="editAge" name="age"/>
                     </div>
                     <div class="mb-3">
                         <label for="editEmail" class="form-label">Email</label>
@@ -255,8 +259,8 @@
                         <input type="password" class="form-control" th:field="*{password}" id="editPassword"/>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="roleSelect"><b>Role</b></label>
-                        <select class="form-select" id="roleSelect" name="roles" multiple>
+                        <label class="form-label" for="role"><b>Role</b></label>
+                        <select class="form-select" id="role" name="roles" multiple>
                             <option th:each="role : ${allRoles}"
                                     th:value="${role.id}"
                                     th:text="${role.role}">
@@ -273,41 +277,69 @@
     </div>
 </div>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         var editUserModal = document.getElementById('editUserModal');
-        editUserModal.addEventListener('show.bs.modal', function(event) {
+        editUserModal.addEventListener('show.bs.modal', function (event) {
             var button = event.relatedTarget; // Кнопка, которая вызвала модальное окно
+
+            // Проверяем, что button существует
+            if (!button) {
+                console.error("Button is undefined");
+                return;
+            }
+
+            // Получаем данные из атрибутов кнопки
             var userId = button.getAttribute('data-user-id');
             var userName = button.getAttribute('data-user-name');
             var userNickname = button.getAttribute('data-user-nickname');
             var userAge = button.getAttribute('data-user-age');
             var userEmail = button.getAttribute('data-user-email');
-            var userRoles = button.getAttribute('data-user-roles').split(','); // Преобразуем строку ролей в массив
+            var userRoles = button.getAttribute('data-user-roles'); // Получаем роли
+
+            // Проверяем, есть ли роли у пользователя
+            var rolesArray = userRoles ? userRoles.split(',') : []; // Если ролей нет, используем пустой массив
+
+            // Логирование для отладки
+            console.log("User roles from button:", rolesArray);
+
 
             // Заполнение формы данными пользователя
             var modal = this;
+            modal.querySelector('#userId').value = userId;
             modal.querySelector('#editFirstName').value = userName;
             modal.querySelector('#editLastName').value = userNickname;
             modal.querySelector('#editAge').value = userAge;
             modal.querySelector('#editEmail').value = userEmail;
 
+            // Получаем все роли из скрытого поля
+            var allRoles = modal.querySelector('#allRoles').value.split(',').map(function (role) {
+                var parts = role.split(':');
+                return { id: parts[0], role: parts[1] };
+            });
+
             // Очистка и заполнение ролей
-            var rolesSelect = modal.querySelector('#editRoles');
+            var rolesSelect = modal.querySelector('#role');
             rolesSelect.innerHTML = ''; // Очистка текущих опций
 
-            // Получаем все роли из скрытого поля
-            var allRoles = JSON.parse(modal.querySelector('#allRoles').value);
-
-            allRoles.forEach(function(role) {
+            allRoles.forEach(function (role) {
                 var option = document.createElement('option');
                 option.value = role.id;
                 option.text = role.role;
-                if (userRoles.includes(role.id.toString())) {
+                if (rolesArray && rolesArray.includes(role.role)) { // Проверяем, есть ли роль у пользователя
                     option.selected = true;
                 }
                 rolesSelect.add(option);
             });
+
+            // Логирование для отладки
+            console.log("Roles select options:", rolesSelect.options);
         });
+    });
+</script>
+<script th:if="${error}">
+    document.addEventListener('DOMContentLoaded', function () {
+        var editUserModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        editUserModal.show();
     });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,0 +1,13 @@
+<configuration>
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/application.log</file> <!-- Путь к файлу лога -->
+        <append>true</append> <!-- Добавлять к существующему файлу -->
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} - %msg%n</pattern> <!-- Формат лога -->
+        </encoder>
+    </appender>
+
+    <root level="DEBUG"> <!-- Уровень логирования -->
+        <appender-ref ref="FILE" />
+    </root>
+</configuration>
