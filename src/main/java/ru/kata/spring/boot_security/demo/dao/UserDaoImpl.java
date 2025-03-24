@@ -27,23 +27,6 @@ public class UserDaoImpl implements UserDao {
         if (user == null) {
             throw new RuntimeException("User not found");
         }
-        user.setName(userUpdate.getName());
-        user.setNickname(userUpdate.getNickname());
-        user.setAge(userUpdate.getAge());
-        user.setEmail(userUpdate.getEmail());
-        if (userUpdate.getPassword() != null && !userUpdate.getPassword().trim().isEmpty()) {
-            user.setPassword(userUpdate.getPassword());
-        }
-        user.getRoleSet().clear();
-        Set<Role> newRoles = userUpdate.getRoleSet();
-        if (newRoles != null) {
-            for (Role role : newRoles) {
-                Role managedRole = entityManager.find(Role.class, role.getId());
-                if (managedRole != null) {
-                    user.getRoleSet().add(managedRole);
-                }
-            }
-        }
         entityManager.merge(user);
     }
 

@@ -50,7 +50,7 @@ public class AdminController {
         List<Role> allRoles = service.getAllRoles();
         model.addAttribute("user", user);
         model.addAttribute("allRoles", allRoles);
-        return "ref";
+        return "admin";
     }
 
     @PostMapping
@@ -95,7 +95,6 @@ public class AdminController {
         if (result.hasErrors()) {
             model.addAttribute("allRoles", userservice.getAllRoles());
             model.addAttribute("error", true);
-            return "admin";
         }
 
         // Обновление полей пользователя
@@ -104,6 +103,11 @@ public class AdminController {
         existingUser.setAge(user.getAge());
         existingUser.setEmail(user.getEmail());
         existingUser.setNickname(user.getNickname());
+
+        //Обновление пароля
+        if (user.getPassword() != null || !user.getPassword().isEmpty()) {
+            existingUser.setPassword(user.getPassword());
+        }
 
         // Обновление ролей
         if (roleIds != null && !roleIds.isEmpty()) {
@@ -114,7 +118,6 @@ public class AdminController {
             logger.warn("Roles are null or empty for user with ID: {}", id); // Логирование, если роли не переданы
             existingUser.setRoleSet(new HashSet<>()); // Устанавливаем пустой набор ролей
         }
-
         userservice.refactorUser(id, existingUser);
         return "redirect:/admin";
     }

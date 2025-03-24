@@ -40,24 +40,12 @@ public class UserServiceImpl implements Userservice {
 
     @Override
     public void refactorUser(int id, User userUpdate) {
-        User existingUser = userDao.show(id);
-        existingUser.setNickname(userUpdate.getNickname());
-        existingUser.setEmail(userUpdate.getEmail());
-        if (userUpdate.getPassword() != null && !userUpdate.getPassword().trim().isEmpty()) {
-            existingUser.setPassword(passwordEncoder.encode(userUpdate.getPassword()));
+        if (userUpdate.getPassword() != null) {
+            userUpdate.setPassword(passwordEncoder.encode(userUpdate.getPassword()));
         }
-        existingUser.getRoleSet().clear();
-        Set<Role> newRoles = userUpdate.getRoleSet();
-        if (newRoles != null) {
-            for (Role role : newRoles) {
-                Role managedRole = roleRepository.findById(role.getId()).orElse(null);
-                if (managedRole != null) {
-                    existingUser.getRoleSet().add(managedRole);
-                }
-            }
-        }
-        userDao.refactorUser(id, existingUser);
+        userDao.refactorUser(id, userUpdate);
     }
+
 
     @Override
     public void deleteUser(int id) {

@@ -31,7 +31,10 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         Integer userId = userDetails.getId();
-        model.addAttribute("user", userservice.show(userId));
+        model.addAttribute("currentUser", userservice.show(userId));
+        model.addAttribute("users", service.usersList());
+        model.addAttribute("user", new User());
+        model.addAttribute("allRoles", userservice.getAllRoles());
         return "user";
     }
 }
