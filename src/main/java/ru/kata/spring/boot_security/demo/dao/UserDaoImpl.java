@@ -14,9 +14,15 @@ public class UserDaoImpl implements UserDao {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Transactional
     @Override
+    @Transactional
     public void addUser(User user) {
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            throw new IllegalArgumentException("Password cannot be empty");
+        }
+        if (findByEmail(user.getEmail()) != null) {
+            throw new IllegalArgumentException("Email already exists");
+        }
         entityManager.persist(user);
     }
 
@@ -27,6 +33,20 @@ public class UserDaoImpl implements UserDao {
         if (user == null) {
             throw new RuntimeException("User not found");
         }
+
+        user.setName(userUpdate.getName());
+        user.setAge(userUpdate.getAge());
+        user.setEmail(userUpdate.getEmail());
+        user.setNickname(userUpdate.getNickname());
+
+        if (userUpdate.getPassword() != null && !userUpdate.getPassword().isEmpty()) {
+            user.setPassword(userUpdate.getPassword());
+        }
+
+        if (userUpdate.getRoleSet() != null) {
+            user.setRoleSet(userUpdate.getRoleSet());
+        }
+
         entityManager.merge(user);
     }
 

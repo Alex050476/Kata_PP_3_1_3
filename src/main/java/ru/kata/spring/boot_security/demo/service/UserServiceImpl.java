@@ -32,9 +32,7 @@ public class UserServiceImpl implements Userservice {
 
     @Override
     public void addUser(User user) {
-        if (user.getPassword() != null) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-        }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userDao.addUser(user);
     }
 
@@ -45,7 +43,6 @@ public class UserServiceImpl implements Userservice {
         }
         userDao.refactorUser(id, userUpdate);
     }
-
 
     @Override
     public void deleteUser(int id) {

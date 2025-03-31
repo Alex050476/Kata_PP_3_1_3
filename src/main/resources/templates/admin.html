@@ -35,13 +35,13 @@
             padding: 20px;
         }
 
-        .nav-tabs .nav-item {
-            display: none; /* Все вкладки скрыты по умолчанию */
-        }
+        /*.nav-tabs .nav-item {*/
+        /*    display: none; !* Все вкладки скрыты по умолчанию *!*/
+        /*}*/
 
-        .nav-tabs .nav-item.active {
-            display: block; /* Показываем только активные */
-        }
+        /*.nav-tabs .nav-item.active {*/
+        /*    display: block; !* Показываем только активные *!*/
+        /*}*/
     </style>
 </head>
 <body>
@@ -71,22 +71,20 @@
 
         <!-- Навигация по вкладкам -->
         <ul class="nav nav-tabs" id="mainTabs">
-            <!-- Админские вкладки -->
-            <li class="nav-item admin-tab" role="presentation">
+            <!-- Вкладки для ADMIN (изначально скрыты) -->
+            <li class="nav-item admin-tab" role="presentation" style="display: none;">
                 <button class="nav-link active" id="users-tab" data-bs-toggle="tab"
-                        data-bs-target="#users-content">Users Table
-                </button>
+                        data-bs-target="#users-content">Users Table</button>
             </li>
-            <li class="nav-item admin-tab" role="presentation">
+            <li class="nav-item admin-tab" role="presentation" style="display: none;">
                 <button class="nav-link" id="new-user-tab" data-bs-toggle="tab"
-                        data-bs-target="#new-user-content">New User
-                </button>
+                        data-bs-target="#new-user-content">New User</button>
             </li>
-            <!-- Вкладка профиля -->
-            <li class="nav-item profile-tab" role="presentation">
+
+            <!-- Вкладка для USER (изначально скрыта) -->
+            <li class="nav-item user-tab" role="presentation" style="display: none;">
                 <button class="nav-link" id="profile-tab" data-bs-toggle="tab"
-                        data-bs-target="#profile-content">My Profile
-                </button>
+                        data-bs-target="#profile-content">My Profile</button>
             </li>
         </ul>
 
@@ -379,22 +377,45 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Оригинальный обработчик кликов без изменений
-        document.querySelectorAll('.sidebar a').forEach(function (link) {
-            link.addEventListener('click', function (event) {
-                event.preventDefault();
-                const role = this.textContent.trim();
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleLinks = document.querySelectorAll('.sidebar a');
 
-                if (role === 'ADMIN') {
-                    document.getElementById('users-tab').click();
-                    document.getElementById('adminTabs').style.display = 'flex';
-                } else if (role === 'USER') {
-                    document.getElementById('profile-tab').click();
-                    document.getElementById('adminTabs').style.display = 'none';
-                }
+        // Функция переключения вкладок
+        function switchTabs(selectedRole) {
+            // Скрываем все вкладки (только nav-item)
+            document.querySelectorAll('.nav-item').forEach(tab => {
+                tab.style.display = 'none';
+            });
+
+            // Показываем нужные вкладки
+            if (selectedRole === 'ADMIN') {
+                document.querySelectorAll('.admin-tab').forEach(tab => {
+                    tab.style.display = 'block';
+                });
+                // Делаем активной вкладку Users Table
+                document.getElementById('users-tab').click();
+            }
+            else if (selectedRole === 'USER') {
+                document.querySelectorAll('.user-tab').forEach(tab => {
+                    tab.style.display = 'block';
+                });
+                // Делаем активной вкладку Profile
+                document.getElementById('profile-tab').click();
+            }
+        }
+
+        // Клики по ролям в боковой панели
+        roleLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                switchTabs(this.textContent.trim());
             });
         });
+
+        // Автовыбор первой роли при загрузке
+        if (roleLinks.length > 0) {
+            switchTabs(roleLinks[0].textContent.trim());
+        }
     });
 </script>
 <script>

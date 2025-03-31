@@ -58,26 +58,19 @@ public class AdminController {
                       BindingResult result,
                       @RequestParam(value = "roles", required = false) List<Integer> roleIds,
                       Model model) {
+
         if (result.hasErrors()) {
             model.addAttribute("allRoles", userservice.getAllRoles());
-            return "admin"; // Возвращаем на ту же страницу с ошибками
+            return "admin";
         }
-        if (!userservice.isEmailUnique(user.getEmail())) {
-            model.addAttribute("emailError", "This email address is already exists!");
-            model.addAttribute("allRoles", userservice.getAllRoles());
-            return "admin"; // Возвращаем на ту же страницу с ошибкой
-        }
-        if (user.getPassword() == null || user.getPassword().isEmpty()) {
-            model.addAttribute("passwordError", "Please enter a password!");
-            model.addAttribute("allRoles", userservice.getAllRoles());
-            return "admin"; // Возвращаем на ту же страницу с ошибкой
-        }
+
         if (roleIds != null) {
             Set<Role> selectedRoles = new HashSet<>(userservice.getRolesByIds(roleIds));
             user.setRoleSet(selectedRoles);
         }
+
         userservice.addUser(user);
-        return "redirect:/admin"; // Перенаправляем на ту же страницу после успешного добавления
+        return "redirect:/admin";
     }
 
     @PatchMapping("/user")
@@ -87,38 +80,18 @@ public class AdminController {
                          @RequestParam(value = "roles", required = false) List<Integer> roleIds,
                          Model model) {
 
-        logger.info("Updating user with ID: {}", id);
-        logger.info("User data: {}", user);
-        logger.info("Roles: {}", roleIds);
-
-        // Логика обновления пользователя
         if (result.hasErrors()) {
             model.addAttribute("allRoles", userservice.getAllRoles());
             model.addAttribute("error", true);
+            return "admin";
         }
 
-        // Обновление полей пользователя
-        User existingUser = userservice.show(id);
-        existingUser.setName(user.getName());
-        existingUser.setAge(user.getAge());
-        existingUser.setEmail(user.getEmail());
-        existingUser.setNickname(user.getNickname());
-
-        //Обновление пароля
-        if (user.getPassword() != null || !user.getPassword().isEmpty()) {
-            existingUser.setPassword(user.getPassword());
-        }
-
-        // Обновление ролей
-        if (roleIds != null && !roleIds.isEmpty()) {
+        if (roleIds != null) {
             Set<Role> selectedRoles = new HashSet<>(userservice.getRolesByIds(roleIds));
-            existingUser.setRoleSet(selectedRoles);
-
-        } else {
-            logger.warn("Roles are null or empty for user with ID: {}", id); // Логирование, если роли не переданы
-            existingUser.setRoleSet(new HashSet<>()); // Устанавливаем пустой набор ролей
+            user.setRoleSet(selectedRoles);
         }
-        userservice.refactorUser(id, existingUser);
+
+        userservice.refactorUser(id, user);
         return "redirect:/admin";
     }
 
